@@ -1,6 +1,6 @@
 const express = require('express');
 
-const users = [
+let users = [
     { id: 1,
     name: 'Nat',
     email: 'nat@natsharpe.com',
@@ -15,7 +15,7 @@ const users = [
     password: 'fishy' }
 ];
 
-const squabs = [
+let squabs = [
     { id: 1,
     userId: 1,
     body: 'Hello everybody' },
@@ -27,14 +27,17 @@ const squabs = [
     body: 'Goodbye everybody' },
     { id: 4,
     userId: 3,
-    body: 'Hello person' }
+    body: 'Hello person' },
+    { id: 5,
+    userId: 3,
+    body: 'Thank you for the plastic monkeys' }
 ];
 
 let authenticate = (req, res, next) => {
-    let name = req.params.name;
-    let password = req.params.password;
-    let thisUser = users.filter(user => name === user.name);
-    if (password === thisUser[0].password) {
+    let name = req.query.name;
+    let password = req.query.password;
+    let thisUser = users.find(user => name === user.name);
+    if (thisUser && password === thisUser.password) {
         next();
     }
     else {
@@ -46,8 +49,29 @@ let getUsers = (req, res) => {
     res.send(users);
 };
 
+let getAllSquabs = (req, res) => {
+    res.send(squabs);
+}
+
+let getUserSquabs = (req, res) => {
+    let userId = req.params.userId;
+    let userSquabs = squabs.filter(squab => userId == squab.userId);
+    res.send(userSquabs)
+}
+
+let deleteSquab = (req, res) => {
+    let squabId = req.params.squabId;
+    squabs = squabs.filter(squab => squabId != squab.id);
+    res.end("Squab #" + squabId + " deleted.")
+}
+
+
 let server = express();
 
-server.get('/users/:name/:password', authenticate, getUsers)
+server.get('/users', authenticate, getUsers);
+server.get('/squabs', authenticate, getAllSquabs);
+server.get('/users/:userId/squabs', authenticate, getUserSquabs);
+server.delete('/squabs/:squabId', authenticate, deleteSquab);
 
-server.listen(3000);
+
+server.listen(4000);
